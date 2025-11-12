@@ -244,3 +244,38 @@ POST /collections/:name/documents/delete
 - All requests are logged to the `actions` collection.
 - Set a strong `JWT_SECRET` in production.
 - Consider adding **role-based authorization** and **rate limiting** in production.
+
+  
+---
+
+## 🤝 Cross-Team Requirements and Change Management
+
+### Combined Requirements Overview
+Both the **Database Development Team** (ProjectV Middleware) and the **IT Deployment Team** share the goal of ensuring secure, reliable, and maintainable data management. The joint requirements include:
+
+- **Consistent Configuration Management:** Environment variables (e.g., MongoDB URI, JWT secret) must be documented and synchronized across development, staging, and production environments.
+- **Secure Deployment:** JWT secrets, admin credentials, and MongoDB access details must be stored using a secure method (e.g., `.env` with restricted permissions or a secrets manager).
+- **Continuous Availability:** The middleware must be deployed with minimal downtime, using containerization or automated redeployment scripts.
+- **Monitoring and Logging:** Both action logs (`actions` collection) and system logs should be collected and accessible to the IT team for auditing and incident response.
+- **Version Compatibility:** Each new API version must maintain backward compatibility or provide migration documentation for existing collections.
+
+### Change Management Conditions
+To maintain system stability, any change to requirements or API structure should only be made when:
+
+1. **Impact Analysis** has been conducted and approved by both teams.
+2. **Documentation Updates** (README, Swagger, and config guides) are complete.
+3. **Automated Tests** and manual smoke tests pass in staging.
+4. **Rollback Plan** is defined for production deployments.
+5. **Sign-Off** is received from the IT lead before release.
+
+### Relevant Testing Practices
+To ensure reliable performance and data integrity, both teams should coordinate the following testing strategies:
+
+| Test Type           | Responsibility   | Purpose |
+|--------------------|----------------|---------|
+| **Unit Tests**      | Database Team   | Validate CRUD logic, JWT verification, and audit logging |
+| **Integration Tests** | Database Team | Verify end-to-end MongoDB operations via API routes |
+| **Deployment Tests**  | IT Team       | Confirm proper startup, environment config, and container health |
+| **Load & Stress Tests** | IT + DB Teams | Evaluate response times and stability under realistic data volumes |
+| **Security Tests**     | Both Teams    | Test token expiration, authorization headers, and vulnerability scans |
+| **Recovery Tests**     | IT Team       | Validate that backup and restore procedures preserve audit logs |
