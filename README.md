@@ -248,7 +248,7 @@ POST /collections/:name/documents/delete
   
 ---
 
-## 🤝 Cross-Team Requirements and Change Management
+## 🤝 Cross-Team Requirements and Change Management w/ IT Team
 
 ### Combined Requirements Overview
 Both the **Database Development Team** (ProjectV Middleware) and the **IT Deployment Team** share the goal of ensuring secure, reliable, and maintainable data management. The joint requirements include:
@@ -279,3 +279,62 @@ To ensure reliable performance and data integrity, both teams should coordinate 
 | **Load & Stress Tests** | IT + DB Teams | Evaluate response times and stability under realistic data volumes |
 | **Security Tests**     | Both Teams    | Test token expiration, authorization headers, and vulnerability scans |
 | **Recovery Tests**     | IT Team       | Validate that backup and restore procedures preserve audit logs |
+
+---
+
+## 🤝 Cross-Team Integration w/ Facilities Team
+
+### Description of the Facilities Team’s Component (As It Stands Currently)
+
+The Facilities Team is developing a C++ application using CMake for building and deployment. Their component is responsible for managing maintenance-related operations, including creating and updating work orders, tracking assets and locations, and logging maintenance activities. Rather than interacting directly with the MongoDB instance, their system is designed to communicate exclusively with our Database/Auth middleware. All database interactions—such as inserting work orders, retrieving asset information, or updating equipment records—are performed through our secured REST API.
+
+Their application depends on the stability of our authentication system (JWT), the correctness of our CRUD endpoints, and the consistency of our API structure. Once our API is deployed on the class server, the Facilities Team will connect to it using the server’s address and port, issuing HTTP requests directly from their C++ client. They rely heavily on our `/docs` Swagger interface and READMEs to understand the expected payloads, endpoint routes, and authentication procedures needed to integrate their component successfully.
+
+---
+
+### Combined List of Requirements Across Both Teams
+
+Both the Database/Auth Team and the Facilities Team share several cross-functional requirements necessary for smooth integration:
+
+* **Stable API Endpoints:** The Facilities Team depends on our consistent route structures for authentication, collection creation, and CRUD operations. Any changes to these endpoints would require updates on their side.
+* **Authentication and Security:** The Facilities Team requires a reliable login mechanism that issues valid JWT tokens, and our team must ensure that token verification and authorization work predictably across all protected routes.
+* **Documentation Alignment:** Our Swagger documentation (`/docs`) and README must remain synchronized with the actual API implementation so the Facilities Team can correctly construct and validate their requests.
+* **Database Consistency:** Collections such as `WorkOrders`, `Assets`, and `Locations` must be available, appropriately named, and maintain predictable metadata fields (`created_at`, `updated_at`, `deleted_at`, etc.).
+* **Operational Availability:** The Facilities Team must be able to reach our running container on the class server. This requires consistent port exposure, uptime, and the avoidance of breaking changes during development.
+* **Interoperable Data Model:** Both teams must agree on the shape and identifiers of the data they exchange—for example, how work orders reference assets and locations, or which fields are required during creation.
+
+Together, these requirements ensure that both teams can treat the middleware as a stable and predictable enterprise service.
+
+---
+
+### Recommended Conditions for Making Changes to These Requirements
+
+Because the Facilities Team’s application completely depends on our API’s stability, changes should only occur once several conditions are met:
+
+1. **Impact Analysis:** Both teams must evaluate how proposed API modifications affect client code, build configurations, and existing data.
+2. **Complete and Updated Documentation:** Any API adjustments—such as changes to routes, payloads, or authentication—must be fully documented in the README and reflected in `/docs` before deployment.
+3. **Backward Compatibility Whenever Possible:** Breaking changes should be avoided. If unavoidable, versioning (e.g., `/v1`, `/v2`) should be introduced so the Facilities Team can transition without interruption.
+4. **Testing and Validation:** Changes must pass unit, integration, and security tests on the API side and be verified manually via Swagger before release.
+5. **Staging Deployment and Smoke Tests:** A temporary staging environment or container must confirm that the Facilities Team can still authenticate and perform CRUD operations.
+6. **Clear Communication and Approval:** The Facilities Team must be informed before any change is deployed, and updates should occur only with joint agreement.
+
+These conditions prevent disruptions and preserve the reliability expected in a multi-team enterprise system.
+
+---
+
+### Relevant Tests for Reliable Operation Between DB/Auth and Facilities
+
+The following tests ensure that both components can operate together without failure and maintain data integrity throughout the system:
+
+| **Test Type**                  | **Responsible Team** | **Purpose for Both Teams**                                                                                                                              |
+| ------------------------------ | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Authentication Tests**       | Database/Auth        | Validate that login returns valid JWTs, expired tokens are rejected, and protected endpoints enforce authorization.                                     |
+| **CRUD Integration Tests**     | Database/Auth        | Ensure Facilities can successfully create, read, update, and soft-delete documents through API calls using real collections (e.g., WorkOrders, Assets). |
+| **Schema Compatibility Tests** | Both Teams           | Confirm that the data shapes used by Facilities match the expected fields and metadata added by the API.                                                |
+| **Connection Tests**           | Facilities Team      | Verify that the C++ application can consistently reach the API on the server and handle network/port changes gracefully.                                |
+| **Soft-Delete Behavior Tests** | Database/Auth        | Demonstrate that deleted records are excluded from default queries but still restorable, ensuring Facilities does not lose data unexpectedly.           |
+| **Audit Logging Tests**        | Database/Auth        | Validate that every Facilities operation creates correct entries in the `actions` log, enabling traceability and debugging.                             |
+| **Performance Sanity Tests**   | Both Teams           | Confirm that typical Facilities operations (e.g., listing work orders) return quickly under normal data volumes.                                        |
+| **Error-Handling Tests**       | Facilities Team      | Ensure that their application gracefully handles 400/401/404 responses and retries or surfaces errors appropriately.                                    |
+
+These tests collectively ensure that the Database/Auth service continues to function as a reliable backend and that the Facilities application can operate on top of it without unexpected behavior.
