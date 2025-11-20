@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>ProjectV Middleware – Sprint 3 Executive Summary</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        body {
+          font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+          margin: 0;
+          padding: 0;
+          line-height: 1.6;
+          background: #f7f7f9;
+          color: #222;
+        }
+        header {
+          background: #222;
+          color: #fff;
+          padding: 1.5rem 2rem;
+        }
+        header h1 {
+          margin: 0 0 0.25rem 0;
+          font-size: 1.8rem;
+        }
+        header p {
+          margin: 0;
+          font-size: 0.95rem;
+          opacity: 0.85;
+        }
+        main {
+          max-width: 960px;
+          margin: 1.5rem auto 3rem;
+          padding: 0 1rem;
+        }
+        section {
+          background: #fff;
+          border-radius: 8px;
+          padding: 1.25rem 1.5rem;
+          margin-bottom: 1.25rem;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        h2 {
+          margin-top: 0;
+          font-size: 1.3rem;
+          border-bottom: 1px solid #eee;
+          padding-bottom: 0.35rem;
+        }
+        h3 {
+          margin-bottom: 0.3rem;
+          font-size: 1.05rem;
+        }
+        ul {
+          margin-top: 0.35rem;
+        }
+        .diagram {
+          text-align: center;
+          margin: 0.75rem 0;
+        }
+        .diagram img {
+          max-width: 100%;
+          height: auto;
+          border-radius: 6px;
+          border: 1px solid #ddd;
+          background: #fafafa;
+        }
+        .meta {
+          font-size: 0.9rem;
+          color: #555;
+        }
+        a {
+          color: #0066cc;
+          text-decoration: none;
+        }
+        a:hover {
+          text-decoration: underline;
+        }
+        footer {
+          max-width: 960px;
+          margin: 0 auto 2rem;
+          padding: 0 1rem;
+          font-size: 0.85rem;
+          color: #666;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>ProjectV Middleware API – Sprint 3 Executive Summary</h1>
+    <p class="meta">
+        DB/Auth Team &nbsp;&middot;&nbsp; Node.js + Express + MongoDB &nbsp;&middot;&nbsp; Shared VM Deployment
+    </p>
+</header>
+
+<main>
+    <section id="overview">
+        <h2>1. Overview</h2>
+        <p>
+            ProjectV is a middleware API that provides a secure, generic data access layer for the class-wide enterprise
+            system. In Sprint 3, the DB/Auth team pivoted from a Spring Boot + PostgreSQL base library to a Node.js +
+            Express middleware backed by MongoDB. This service runs on the shared virtual machines
+            (<code>10.172.55.11</code> and <code>10.172.55.12</code>) alongside other teams’ back-end services.
+        </p>
+        <p>
+            The goal is to allow teams such as HR, Point of Sale, Facilities, Transactions, Inventory Management, and Menu
+            to manage their own collections while relying on shared authentication, audit logging, and soft delete behavior.
+            Instead of exposing MongoDB directly, ProjectV acts as the single entry point for all database access.
+        </p>
+    </section>
+
+    <section id="architecture">
+        <h2>2. Architecture</h2>
+        <p>
+            All back-end services are deployed to the shared VM cluster. ProjectV runs as a Node.js/Express container on one
+            of the VMs and communicates with a MongoDB instance on the same node. Other teams’ backends call ProjectV over
+            HTTP, and their desktop or front-end clients talk to their own backend services.
+        </p>
+        <div class="diagram">
+            <img src="images/architecture.png" alt="Shared VM architecture diagram showing ProjectV and team backends" />
+        </div>
+        <p>
+            MongoDB is not directly exposed outside the VM. This ensures that authentication, validation, and logging are
+            consistently enforced through the middleware, simplifying governance and debugging.
+        </p>
+        <p>
+            The full API reference and module-level documentation are generated with Doxygen and available at:
+            <a href="doxygen/html/index.html">ProjectV Doxygen Documentation</a>.
+        </p>
+    </section>
+
+    <section id="api">
+        <h2>3. API Capabilities</h2>
+        <h3>3.1 Core Endpoints</h3>
+        <ul>
+            <li><strong>Health Check</strong>: <code>GET /health</code> &mdash; confirms that the service is running.</li>
+            <li><strong>Authentication</strong>: <code>POST /auth/login</code> &mdash; verifies credentials and returns a JWT.</li>
+            <li><strong>Collections</strong>:
+                <ul>
+                    <li><code>GET /api/collections</code> &mdash; lists existing collections.</li>
+                    <li><code>POST /api/collections/:name</code> &mdash; creates a new collection for a team.</li>
+                </ul>
+            </li>
+            <li><strong>Documents</strong>:
+                <ul>
+                    <li><code>POST /api/collections/:name/documents</code> &mdash; inserts documents with metadata.</li>
+                    <li><code>POST /api/collections/:name/find</code> &mdash; queries with JSON filters.</li>
+                    <li><code>GET /api/collections/:name/documents/:id</code> &mdash; fetches by document ID.</li>
+                    <li><code>PATCH /api/collections/:name/documents/:id</code> &mdash; updates documents.</li>
+                    <li><code>DELETE /api/collections/:name/documents/:id</code> &mdash; performs a soft delete.</li>
+                </ul>
+            </li>
+            <li><strong>Audit Log</strong>:
+                <ul>
+                    <li><code>POST /api/actions/find</code> &mdash; queries the <code>actions</code> audit collection.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>3.2 Authentication and JWT Flow</h3>
+        <p>
+            Authentication uses JSON Web Tokens. A client submits a username and password to <code>/auth/login</code>.
+            On success, a JWT is issued containing the user identity (for example, <code>username</code> and
+            <code>email</code>). On subsequent requests, clients send
+            <code>Authorization: Bearer &lt;token&gt;</code>. Middleware validates the token and attaches the decoded user
+            object to <code>req.user</code> for downstream handlers.
+        </p>
+        <div class="diagram">
+            <img src="images/auth_flow.png" alt="Authentication and JWT flow diagram" />
+        </div>
+    </section>
+
+    <section id="data">
+        <h2>4. Data Handling, Soft Delete, and Audit Logging</h2>
+        <h3>4.1 Soft Delete and Metadata</h3>
+        <p>
+            ProjectV uses a soft delete strategy rather than hard deletes. When documents are created, updated, or deleted,
+            metadata fields such as <code>created_at</code>, <code>created_by</code>, <code>updated_at</code>,
+            <code>updated_by</code>, <code>deleted_at</code>, and <code>deleted_by</code> are used to preserve history.
+            Normal queries can exclude soft-deleted documents while still allowing administrators to inspect the underlying
+            records when needed.
+        </p>
+        <div class="diagram">
+            <img src="images/soft_delete.png" alt="Document lifecycle and soft delete diagram" />
+        </div>
+
+        <h3>4.2 Audit Logging</h3>
+        <p>
+            Every API request passes through an audit logging middleware. After the response is sent, an entry is written to
+            the <code>actions</code> collection containing:
+        </p>
+        <ul>
+            <li>User identity (username, email, or anonymous)</li>
+            <li>HTTP method and path</li>
+            <li>Request parameters, query string, and body</li>
+            <li>Response status code and duration</li>
+            <li>Timestamp, IP address, and user agent</li>
+        </ul>
+        <div class="diagram">
+            <img src="images/audit_flow.png" alt="Audit logging flow diagram" />
+        </div>
+        <p>
+            This central audit trail supports debugging and compliance in a shared environment where multiple teams access
+            the middleware.
+        </p>
+    </section>
+
+    <section id="testing">
+        <h2>5. Testing Strategy</h2>
+        <p>
+            Sprint 3 focuses on defining and preparing tests that can be run locally and on the shared VMs once connectivity
+            issues are resolved. The strategy includes:
+        </p>
+        <ul>
+            <li><strong>Unit tests</strong> for authentication functions, token helpers, and utility code.</li>
+            <li><strong>Integration tests</strong> that exercise login, protected routes, and CRUD flows against MongoDB.</li>
+            <li><strong>Regression suites</strong> (e.g., Postman collections or automated scripts) that verify typical API scenarios.</li>
+        </ul>
+        <div class="diagram">
+            <img src="images/testing_layers.png" alt="Testing layers diagram: unit, integration, regression" />
+        </div>
+        <p>
+            At the time of this sprint, full end-to-end testing against the class VM is partially blocked by server login
+            issues, but local testing and test design work are in progress.
+        </p>
+    </section>
+
+    <section id="progress">
+        <h2>6. Progress and Next Steps</h2>
+        <p>
+            During Sprint 3, the DB/Auth team:
+        </p>
+        <ul>
+            <li>Completed the pivot to a Node.js + Express + MongoDB middleware design.</li>
+            <li>Implemented authentication, collections, document, and audit logging endpoints.</li>
+            <li>Prepared Doxygen-generated documentation for the codebase.</li>
+            <li>Designed an architecture and testing strategy suitable for the shared VM environment.</li>
+        </ul>
+        <p>
+            Next steps include:
+        </p>
+        <ul>
+            <li>Running full integration and regression tests once VM login issues are resolved.</li>
+            <li>Integrating with at least one partner team (e.g., Facilities or POS) for an end-to-end workflow.</li>
+            <li>Adding role-based permissions and further hardening security and validation.</li>
+            <li>Finalizing diagrams and documentation for the full enterprise demo in the final sprint.</li>
+        </ul>
+    </section>
+</main>
+
+<footer>
+    <p>
+        For detailed API and code-level documentation, see the
+        <a href="doxygen/html/index.html">ProjectV Doxygen site</a>.
+    </p>
+</footer>
+</body>
+</html>

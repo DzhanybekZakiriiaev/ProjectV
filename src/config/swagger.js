@@ -1,3 +1,12 @@
+/**
+ * @file swagger.js
+ * @brief OpenAPI / Swagger configuration for ProjectV.
+ *
+ * Uses swagger-jsdoc to generate an OpenAPI specification from
+ * JSDoc comments in the route files. The generated spec is then
+ * served via Swagger UI in index.js.
+ */
+
 import swaggerJSDoc from "swagger-jsdoc";
 
 const options = {
@@ -29,6 +38,13 @@ const options = {
   ],
 };
 
+
+/**
+ * @brief Generated OpenAPI specification for the API.
+ *
+ * This object is consumed by Swagger UI to render interactive
+ * documentation at the /docs endpoint.
+ */
 export const swaggerSpec = swaggerJSDoc(options);
 
 

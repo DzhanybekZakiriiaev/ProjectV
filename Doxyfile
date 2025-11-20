@@ -1,0 +1,36 @@
+#----------------- Project -----------------
+PROJECT_NAME           = "ProjectV Middleware API"
+PROJECT_BRIEF          = "Node.js + Express + MongoDB middleware"
+
+OUTPUT_DIRECTORY       = docs/doxygen
+
+#----------------- Input -------------------
+INPUT                  = src docs
+RECURSIVE              = YES
+FILE_PATTERNS          = *.js *.md
+
+# Treat .js as JavaScript source
+EXTENSION_MAPPING      = js=JavaScript
+
+#----------------- Extraction ----------------
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+EXTRACT_LOCAL_CLASSES  = YES
+EXTRACT_LOCAL_METHODS  = YES
+
+JAVADOC_AUTOBRIEF      = YES
+OPTIMIZE_OUTPUT_FOR_C  = NO
+OPTIMIZE_OUTPUT_JAVA   = YES
+
+#----------------- HTML output --------------
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+FULL_SIDEBAR           = YES
+GENERATE_TREEVIEW      = YES
+
+#----------------- Misc ---------------------
+QUIET                  = NO
+WARNINGS               = YES
+WARN_IF_UNDOCUMENTED   = NO
+WARN_IF_DOC_ERROR      = YES

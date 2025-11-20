@@ -1,3 +1,11 @@
+/**
+ * @file actionsRoutes.js
+ * @brief Routes for querying the actions audit log.
+ *
+ * Provides an endpoint to search the `actions` collection using
+ * flexible filters for debugging and compliance scenarios.
+ */
+
 import { Router } from "express";
 import { getDb } from "../config/db.js";
 
@@ -32,6 +40,21 @@ const router = Router();
  *       200:
  *         description: Actions log
  */
+
+ /**
+  * @brief Query the actions audit collection.
+  *
+  * Accepts a JSON body with filter, projection, sort, limit, and skip
+  * to retrieve matching audit log entries. Enforces basic validation
+  * on the filter object and caps the maximum limit.
+  *
+  * @route POST /actions/find
+  *
+  * @param {import("express").Request} req  Incoming HTTP request.
+  * @param {import("express").Response} res HTTP response.
+  * @param {Function} next                  Next middleware function.
+  * @returns {Promise<void>}
+  */
 router.post("/find", async (req, res, next) => {
   try {
     const db = await getDb();

@@ -1,3 +1,11 @@
+/**
+ * @file index.js
+ * @brief Express application entry point for ProjectV.
+ *
+ * Configures the Express app, core middleware, routes, Swagger UI,
+ * and starts the HTTP server after ensuring a MongoDB connection.
+ */
+
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
@@ -19,7 +27,16 @@ app.use(cors());
 app.use(express.json({ limit: "1mb" }));
 app.use(morgan("dev"));
 
-// Health check (public)
+//Health Check (public)
+/**
+ * @brief Health check endpoint that also pings MongoDB.
+ *
+ * Returns HTTP 200 with `{ status: "ok" }` when both the API and the
+ * MongoDB instance are reachable. Otherwise returns HTTP 500 with
+ * error details.
+ *
+ * @route GET /health
+ */
 app.get("/health", async (req, res) => {
   try {
     const client = await getClient();
@@ -38,7 +55,23 @@ app.use("/api", authenticate, auditLog, dbRouter);
 app.use("/actions", authenticate, auditLog, actionsRouter);
 
 // Swagger docs (public)
+/**
+ * @brief Swagger UI for interactive API documentation.
+ *
+ * Serves a visual interface for the OpenAPI specification generated
+ * from route JSDoc comments.
+ *
+ * @route GET /docs
+ */
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, { explorer: true }));
+
+/**
+ * @brief Raw OpenAPI JSON specification.
+ *
+ * Useful for programmatic access to the API description.
+ *
+ * @route GET /swagger.json
+ */
 app.get("/swagger.json", (req, res) => {
   res.setHeader("Content-Type", "application/json");
   res.send(swaggerSpec);
@@ -58,6 +91,14 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 
+/**
+ * @brief Start the ProjectV HTTP server.
+ *
+ * Ensures the database connection is established before listening
+ * on the configured port.
+ *
+ * @returns {Promise<void>}
+ */
 async function start() {
   // ensure DB connects before starting server
   await getDb();

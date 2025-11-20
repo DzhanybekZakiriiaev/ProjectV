@@ -1,3 +1,11 @@
+/**
+ * @file dbRoutes.js
+ * @brief Routes for managing collections and documents in MongoDB.
+ *
+ * Provides endpoints to list and create collections, and to perform
+ * CRUD and soft-delete operations on documents within those collections.
+ */
+
 import { Router } from "express";
 import { ObjectId } from "mongodb";
 import { getDb } from "../config/db.js";
@@ -10,6 +18,15 @@ import {
 
 const router = Router();
 
+/**
+ * @brief Coerce string query values into appropriate types.
+ *
+ * Converts "true"/"false" to booleans, "null" to null, and numeric
+ * strings to numbers where possible.
+ *
+ * @param {unknown} value Input value (often a string from query).
+ * @returns {unknown} Coerced value with best-guess type.
+ */
 function coerceValue(value) {
   if (value === "true") return true;
   if (value === "false") return false;
@@ -18,6 +35,15 @@ function coerceValue(value) {
   return value;
 }
 
+/**
+ * @brief Parse a filter input into an object.
+ *
+ * Accepts either an object or a JSON string. Returns a plain
+ * object or an empty object when parsing fails or input is invalid.
+ *
+ * @param {unknown} input Filter provided by the client.
+ * @returns {Object} Parsed filter object.
+ */
 function parseFilterInput(input) {
   if (!input) return {};
   if (typeof input === "object") return input;
@@ -40,6 +66,14 @@ function parseFilterInput(input) {
  *       200:
  *         description: Array of collection names
  */
+
+ /**
+  * @brief List all collections in the database.
+  *
+  * Returns an array of collection names from the current database.
+  *
+  * @route GET /api/collections
+  */
 router.get("/collections", async (req, res, next) => {
   try {
     const db = await getDb();
@@ -67,6 +101,15 @@ router.get("/collections", async (req, res, next) => {
  *       201:
  *         description: Created
  */
+
+ /**
+  * @brief Create a new MongoDB collection if it does not exist.
+  *
+  * Returns a message indicating whether the collection was newly
+  * created or already existed.
+  *
+  * @route POST /api/collections/:name
+  */
 router.post("/collections/:name", async (req, res, next) => {
   try {
     const db = await getDb();
@@ -108,6 +151,15 @@ router.post("/collections/:name", async (req, res, next) => {
  *       201:
  *         description: Inserted
  */
+
+ /**
+  * @brief Insert a new document into the specified collection.
+  *
+  * Adds creation metadata (created_at, created_by) using the
+  * authenticated user, then inserts the document.
+  *
+  * @route POST /api/collections/:name/documents
+  */
 router.post("/collections/:name/documents", async (req, res, next) => {
   try {
     const db = await getDb();
@@ -154,6 +206,15 @@ router.post("/collections/:name/documents", async (req, res, next) => {
  *       200:
  *         description: Updated
  */
+
+ /**
+  * @brief Partially update a document by its ID.
+  *
+  * Applies updates and update metadata, but only if the document
+  * has not been soft deleted.
+  *
+  * @route PATCH /api/collections/:name/documents/:id
+  */
 router.patch("/collections/:name/documents/:id", async (req, res, next) => {
   try {
     const db = await getDb();
@@ -222,6 +283,16 @@ router.patch("/collections/:name/documents/:id", async (req, res, next) => {
  *       200:
  *         description: Results
  */
+
+
+/**
+ * @brief Query documents from a collection using a JSON filter.
+ *
+ * Supports filter, projection, sort, limit, and skip. Automatically
+ * excludes soft-deleted documents via addSoftDeleteFilter.
+ *
+ * @route POST /api/collections/:name/find
+ */
 router.post("/collections/:name/find", async (req, res, next) => {
   try {
     const db = await getDb();
@@ -263,6 +334,15 @@ router.post("/collections/:name/find", async (req, res, next) => {
  *       200:
  *         description: Deletion result
  */
+
+ /**
+  * @brief Soft-delete multiple documents matching a filter.
+  *
+  * Sets deleted_at and deleted_by on all documents that match the
+  * provided filter and are not already soft-deleted.
+  *
+  * @route DELETE /api/collections/:name/documents
+  */
 router.delete("/collections/:name/documents", async (req, res, next) => {
   try {
     const db = await getDb();
@@ -302,6 +382,15 @@ router.delete("/collections/:name/documents", async (req, res, next) => {
  *       200:
  *         description: Deletion result
  */
+
+ /**
+  * @brief Soft-delete documents via POST as an alternative to DELETE.
+  *
+  * Same behavior as DELETE /documents but uses POST to make it easier
+  * for some clients to send JSON bodies.
+  *
+  * @route POST /api/collections/:name/documents/delete
+  */
 router.post("/collections/:name/documents/delete", async (req, res, next) => {
   try {
     const db = await getDb();
@@ -337,6 +426,12 @@ router.post("/collections/:name/documents/delete", async (req, res, next) => {
  *       200:
  *         description: Found
  */
+
+ /**
+  * @brief Get a single document by its ID if not soft-deleted.
+  *
+  * @route GET /api/collections/:name/documents/:id
+  */
 router.get("/collections/:name/documents/:id", async (req, res, next) => {
   try {
     const db = await getDb();
@@ -374,6 +469,15 @@ router.get("/collections/:name/documents/:id", async (req, res, next) => {
  *       200:
  *         description: Deleted
  */
+
+ /**
+  * @brief Soft-delete a single document by ID.
+  *
+  * Sets deleted_at and deleted_by fields instead of removing the
+  * document from the collection.
+  *
+  * @route DELETE /api/collections/:name/documents/:id
+  */
 router.delete("/collections/:name/documents/:id", async (req, res, next) => {
   try {
     const db = await getDb();
