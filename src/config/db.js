@@ -22,22 +22,22 @@ let cachedDb = null;
  * @returns {Promise<import("mongodb").Db>} The MongoDB database instance.
  */
 export async function getDb() {
-  if (cachedDb) return cachedDb;
+    if (cachedDb) return cachedDb;
 
-  const uri = process.env.MONGODB_URI;
-  const dbName = process.env.MONGODB_DB;
+    const uri = process.env.MONGODB_URI;
+    const dbName = process.env.MONGODB_DB;
 
-  if (!uri) {
-    throw new Error("MONGODB_URI is not set");
-  }
+    if (!uri) {
+        throw new Error("MONGODB_URI is not set");
+    }
 
-  const client = new MongoClient(uri, {
-    serverSelectionTimeoutMS: 10000
-  });
+    const client = new MongoClient(uri, {
+        serverSelectionTimeoutMS: 10000
+    });
 
-  cachedClient = await client.connect();
-  cachedDb = cachedClient.db(dbName);
-  return cachedDb;
+    cachedClient = await client.connect();
+    cachedDb = cachedClient.db(dbName);
+    return cachedDb;
 }
 
 /**
@@ -48,9 +48,9 @@ export async function getDb() {
  * @returns {Promise<import("mongodb").MongoClient>} The MongoClient instance.
  */
 export async function getClient() {
-  if (cachedClient) return cachedClient;
-  await getDb();
-  return cachedClient;
+    if (cachedClient) return cachedClient;
+    await getDb();
+    return cachedClient;
 }
 
 /**
@@ -61,11 +61,11 @@ export async function getClient() {
  * @returns {Promise<void>}
  */
 export async function closeDb() {
-  if (cachedClient) {
-    await cachedClient.close();
-    cachedClient = null;
-    cachedDb = null;
-  }
+    if (cachedClient) {
+        await cachedClient.close();
+        cachedClient = null;
+        cachedDb = null;
+    }
 }
 
 
