@@ -18,7 +18,7 @@ const options = {
       description: "Middleware API to manage MongoDB collections and documents with authentication and audit logging",
     },
     servers: [
-      { url: "http://localhost:" + (process.env.PORT || 3000) }
+      { url: "http://localhost:" + (process.env.PORT || 3100) }
     ],
     components: {
       securitySchemes: {

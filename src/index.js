@@ -89,7 +89,7 @@ app.use((err, req, res, next) => {
   res.status(status).json({ error: err.message || "Internal Server Error" });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3100;
 
 /**
  * @brief Start the ProjectV HTTP server.

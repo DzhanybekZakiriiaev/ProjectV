@@ -2,10 +2,10 @@ services:
   api:
     build: .
     ports:
-      - "3000:3000"
+      - "3100:3100"
     environment:
       NODE_ENV: production
-      PORT: 3000
+      PORT: 3100
       MONGODB_URI: mongodb://mongo:27017/projectv
       MONGODB_DB: projectv
       JWT_SECRET: change-me
@@ -13,7 +13,7 @@ services:
       mongo:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:3000/health"]
+      test: ["CMD", "curl", "--fail", "http://localhost:3100/health"]
       interval: 30s
       timeout: 5s
       retries: 3

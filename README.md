@@ -36,7 +36,7 @@ npm run dev
 Health check:
 
 ```bash
-curl http://localhost:3000/health
+curl http://localhost:3100/health
 ```
 
 ---
@@ -62,7 +62,7 @@ All API routes (except `/health`, `/auth/login`, and `/docs`) require a JWT Bear
 Use the token in all subsequent requests:
 
 ```bash
-curl -H "Authorization: Bearer YOUR_TOKEN" http://localhost:3000/api/collections
+curl -H "Authorization: Bearer YOUR_TOKEN" http://localhost:3100/api/collections
 ```
 
 ---
@@ -105,7 +105,7 @@ All document operations include automatic timestamp and user tracking:
 
 ## 🧠 API Reference
 
-**Base URL:** `http://localhost:3000/api`  
+**Base URL:** `http://localhost:3100/api`  
 *(All routes require Bearer token.)*
 
 ### Collections
@@ -232,9 +232,9 @@ POST /collections/:name/documents/delete
 
 ## 📘 Swagger
 
-- **UI:** [http://localhost:3000/docs](http://localhost:3000/docs)  
+- **UI:** [http://localhost:3100/docs](http://localhost:3100/docs)  
   *(Use the “Authorize” button with your Bearer token)*
-- **JSON:** [http://localhost:3000/swagger.json](http://localhost:3000/swagger.json)
+- **JSON:** [http://localhost:3100/swagger.json](http://localhost:3100/swagger.json)
 
 ---
 
