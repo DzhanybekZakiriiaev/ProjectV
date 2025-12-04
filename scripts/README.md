@@ -2,6 +2,30 @@
 
 This directory contains utility scripts for managing the database.
 
+## Create Admin User
+
+Creates a single admin user in the database (matches the README example).
+
+### Usage
+
+```bash
+npm run create-admin
+```
+
+### What it creates:
+
+- **Admin user**:
+  - Username: `admin`
+  - Email: `admin@example.com`
+  - Password: `yourpassword`
+  - Uses `bcrypt.hashSync()` as shown in README
+
+### Features:
+
+- Checks if admin user already exists (prevents duplicates)
+- Uses synchronous password hashing (`hashSync`)
+- Simple, focused script for initial setup
+
 ## Seed Script
 
 Populates the database with sample data for development and testing.
@@ -62,4 +86,5 @@ MONGODB_DB=your_database_name
 - The seed script will skip seeding if data already exists (checks for `_seeded: true`)
 - Only data created by the seed script will be removed by the cleanup script
 - Your existing data (without `_seeded: true`) will remain untouched
+
 

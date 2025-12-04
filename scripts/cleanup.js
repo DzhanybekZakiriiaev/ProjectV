@@ -73,3 +73,4 @@ async function cleanup() {
 // Run cleanup if script is executed directly
 cleanup();
 
+
