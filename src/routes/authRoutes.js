@@ -1,3 +1,10 @@
+/**
+ * @file authRoutes.js
+ * @brief Authentication routes for ProjectV.
+ *
+ * Exposes endpoints for logging in and obtaining JWT tokens.
+ */
+
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import { getDb } from "../config/db.js";
@@ -28,6 +35,21 @@ const router = Router();
  *       401:
  *         description: Invalid credentials
  */
+
+ /**
+  * @brief Login endpoint for issuing JWT tokens.
+  *
+  * Validates the provided username and password against the `users`
+  * collection. On success, returns a signed JWT token and basic user
+  * information; otherwise returns an error.
+  *
+  * @route POST /auth/login
+  *
+  * @param {import("express").Request} req  Body: { username, password }.
+  * @param {import("express").Response} res JSON response with token or error.
+  * @param {Function} next                  Next middleware function.
+  * @returns {Promise<void>}
+  */
 router.post("/login", async (req, res, next) => {
   try {
     const { username, password } = req.body || {};
