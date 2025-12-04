@@ -1,5 +1,21 @@
 node_modules
 npm-debug.log
 .env
+.env.*
+!.env.example
 .git
+*.md
+!README.md
+docs/
+coverage/
+.idea/
+.vscode/
+*.swp
+*.log
+.DS_Store
+Thumbs.db
+test/
+__tests__/
+jest.config.js
+babel.config.js
 
