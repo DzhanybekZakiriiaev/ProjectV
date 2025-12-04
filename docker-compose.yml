@@ -1,14 +1,19 @@
+name: projectv
+
 services:
   api:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: projectv-api
     ports:
-      - "3100:3100"
+      - "${PORT:-3100}:3100"
     environment:
       NODE_ENV: production
       PORT: 3100
-      MONGODB_URI: mongodb://mongo:27017/projectv
-      MONGODB_DB: projectv
-      JWT_SECRET: change-me
+      MONGODB_URI: mongodb://mongo:27017/${MONGODB_DB:-projectv}
+      MONGODB_DB: ${MONGODB_DB:-projectv}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
     depends_on:
       mongo:
         condition: service_healthy
@@ -18,21 +23,32 @@ services:
       timeout: 5s
       retries: 3
       start_period: 20s
+    restart: unless-stopped
+    networks:
+      - projectv-network
 
   mongo:
     image: mongo:7.0
+    container_name: projectv-mongo
     restart: unless-stopped
     environment:
-      MONGO_INITDB_DATABASE: projectv
+      MONGO_INITDB_DATABASE: ${MONGODB_DB:-projectv}
     volumes:
       - mongo-data:/data/db
     healthcheck:
       test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
-      interval: 30s
-      timeout: 10s
+      interval: 10s
+      timeout: 5s
       retries: 5
       start_period: 20s
+    networks:
+      - projectv-network
 
 volumes:
   mongo-data:
+    driver: local
+
+networks:
+  projectv-network:
+    driver: bridge
 
